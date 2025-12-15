@@ -1,0 +1,25 @@
+pipeline {
+  agent {
+    label 'agent1'
+   }
+
+  stages{
+        stage("Clean Workspace") { 
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage("App Codeckeckout"){
+            steps {
+                git branch: "master", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
+            }  
+        }
+
+        stage("build Image"){
+            steps{
+                sh 'docker build -t jenkinsimage:v1 .'
+            }
+        }
+   }
+}

@@ -12,7 +12,7 @@ pipeline {
 
         stage("App Codeckeckout"){
             steps {
-                git branch: "master", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
+                git branch: "main", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
             }  
         }
 

@@ -3,7 +3,7 @@ pipeline {
     label 'agent1'
    }
   parameters {
-        string(name: 'ImageTag', defaultValue: 'latest', description: 'ImageTag') 
+        string(name: 'ImageTag', defaultValue: 'phpapp-rc-1.0', description: 'ImageTag') 
   }
   stages{
         stage("Clean Workspace") { 
@@ -14,7 +14,7 @@ pipeline {
 
         stage("App Codeckeckout"){
             steps {
-                git branch: "main", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
+                git branch: "phpapp", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
             }  
         }
 

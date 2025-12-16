@@ -1,8 +1,8 @@
 # base Image call for web based nginx server 
-FROM nginx:latest
+FROM php:8.5-rc-apache
 
 # copy src code in nginx document root 
-COPY src/ /usr/share/nginx/html/ 
+COPY src/ /var/www/html/
 
 # EXPOSE port 
 EXPOSE 80

@@ -2,6 +2,8 @@ pipeline {
   agent {
     label 'agent1'
    }
+  parameters {
+        string(name: 'ImageTag', defaultValue: 'latest', description: 'ImageTag') 
 
   stages{
         stage("Clean Workspace") { 
@@ -18,7 +20,7 @@ pipeline {
 
         stage("build Image"){
             steps{
-                sh 'docker build -t prateekkumawat/jenkinsimage:v1 .'
+                sh "docker build -t prateekkumawat/jenkinsimage:${params.ImageTag} ."
             }
         }
 
@@ -28,7 +30,7 @@ pipeline {
             }
             steps{
                 sh "docker login -u $DOCKER_CREDS_USR -p $DOCKER_CREDS_PSW "
-                sh "docker push prateekkumawat/jenkinsimage:v1 " 
+                sh "docker push prateekkumawat/jenkinsimage:${params.ImageTag}" 
             }
         }
     }

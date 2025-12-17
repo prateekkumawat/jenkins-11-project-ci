@@ -1,0 +1,8 @@
+services: 
+  phpapp: 
+    container_name: phpapp
+    image: prateekkumawat/jenkinsimage:phpapp-rc-1.1
+    ports: 
+      - 8081:80 
+    restart: always
+   

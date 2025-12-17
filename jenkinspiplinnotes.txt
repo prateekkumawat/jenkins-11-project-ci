@@ -7,3 +7,6 @@
 - **** if user join in current shell of user that not impact so close your shell terminal and check command running else reboot system.
 ***** refreance for jenkins pipline syntax ****
 - https://www.jenkins.io/doc/book/pipeline/syntax/#agent
+
+task1: create a Hello Python Flask webapp and release using jenkinspipeline on docker 
+task2: create a Java Springapp based any webapp spin using jenkinspipeline on docker

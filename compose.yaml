@@ -1,7 +1,7 @@
 services: 
   webapp: 
     container_name: webapp
-    image: prateekkumwat/jenkinsimage:v1.1.1
+    image: prateekkumawat/jenkinsimage:v1.1.1
     ports: 
       - 8080:80 
     restart: always

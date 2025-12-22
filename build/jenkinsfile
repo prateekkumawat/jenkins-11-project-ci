@@ -5,6 +5,10 @@ pipeline {
   parameters {
         string(name: 'ImageTag', defaultValue: 'phpapp-rc-1.0', description: 'ImageTag') 
   }
+  environment {
+    SCANNER_HOME = tool 'sonar-scanner'
+    }
+
   stages{
         stage("Clean Workspace") { 
             steps {
@@ -17,12 +21,34 @@ pipeline {
                 git branch: "phpapp", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
             }  
         }
+        
+        stage ("Sonar Analysis"){
+            steps{
+                dir('src/'){
+                    withSonarQubeEnv('sonar-server') {
+                       sh ''' 
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectKey=jenkins-php-test-project \
+                        -Dsonar.projectName=jenkins-php-test-project  '''
+                    }
+                }             
+            }
+        }
+
+        stage("Sonar QualityGate"){
+            steps{
+                script {
+                  waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
+                }
+            }
+        }
 
         stage("build Image"){
             steps{
                 sh "docker build -t prateekkumawat/jenkinsimage:${params.ImageTag} ."
             }
         }
+
 
         stage("Image push"){
             environment {

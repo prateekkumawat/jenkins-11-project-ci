@@ -49,6 +49,12 @@ pipeline {
             }
         }
 
+        stage("Trivy Scan"){
+            steps{
+                sh "trivy image prateekkumawat/jenkinsimage:${params.ImageTag} >> /home/ubuntu/scanner_report/${params.ImageTag}_report.txt"
+            }
+        }
+
 
         stage("Image push"){
             environment {

@@ -19,7 +19,7 @@ pipeline {
 
         stage("App Codeckeckout"){
             steps {
-                git branch: "pythonbuild", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
+                git branch: "pyhtonbuild", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
             }  
         }
         

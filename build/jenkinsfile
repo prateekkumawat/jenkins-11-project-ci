@@ -51,9 +51,9 @@ pipeline {
                     nexusVersion: 'nexus3',
                     protocol: 'http',
                     nexusUrl: "${env.NEXUSURL_HOST}",
-                    groupId: 'demoapp',
+                    groupId: 'highskyapp',
                     version: "${env.PACKAGE_VERSION}",
-                    repository: 'pythonbuild',  // use a PyPI-like repo in Nexus
+                    repository: 'python-release',  // use a PyPI-like repo in Nexus
                     credentialsId: 'nexus-creds',
                     artifacts: [
                         [

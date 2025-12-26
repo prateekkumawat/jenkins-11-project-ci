@@ -1,8 +1,11 @@
-# base Image call for web based nginx server 
-FROM php:8.5-rc-apache
+FROM python:3.11-slim
 
-# copy src code in nginx document root 
-COPY src/ /var/www/html/
+WORKDIR /app
 
-# EXPOSE port 
-EXPOSE 80
+COPY app/requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app/ .
+
+CMD ["python", "app.py"]

@@ -32,8 +32,7 @@ pipeline {
             steps{
                 dir('springapp/'){
                     withSonarQubeEnv('sonar-server') {
-                       sh ''' 
-                         mvn clean verify sonar:sonar  \
+                       sh ''' mvn clean verify sonar:sonar  \
                         -Dsonar.projectKey=java-build-app \
                         -Dsonar.projectName=java-build-app  '''
                     }

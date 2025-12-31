@@ -3,11 +3,16 @@ pipeline {
     label 'agent1'
    }
   parameters {
-        string(name: 'ImageTag', defaultValue: 'pythonapp-rc-1.0', description: 'ImageTag') 
+        string(name: 'ImageTag', defaultValue: 'springapp-rc-1.0', description: 'ImageTag') 
   }
+  tool {
+    maven 'maven'
+    git 'git'
+  }
+
   environment {
     SCANNER_HOME = tool 'sonar-scanner'
-    NEXUSURL_HOST = "13.232.123.117:8081"
+    NEXUSURL_HOST = "52.66.146.193:8081"
     }
 
   stages{
@@ -19,18 +24,18 @@ pipeline {
 
         stage("App Codeckeckout"){
             steps {
-                git branch: "pyhtonbuild", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
+                git branch: "javaapp", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
             }  
         }
         
         stage ("Sonar Analysis"){
             steps{
-                dir('app/'){
+                dir('springapp/'){
                     withSonarQubeEnv('sonar-server') {
                        sh ''' 
-                        $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectKey=python-build-app \
-                        -Dsonar.projectName=python-build-app  '''
+                         mvn clean verify sonar:sonar  \
+                        -Dsonar.projectKey=java-build-app \
+                        -Dsonar.projectName=java-build-app  '''
                     }
                 }             
             }
@@ -43,60 +48,24 @@ pipeline {
                 }
             }
         }
-        
-        stage("PythonBuild"){
-            steps{
-                dir('app/'){
-                  sh '''
-                    #!/bin/bash
-                    set -e
-                    python3 -m venv venv
-                    venv/bin/pip install --upgrade pip setuptools wheel build
-                    venv/bin/python -m build
-                    '''
-
-                    // Dynamically get package name and version
-                    script {
-                        env.PACKAGE_NAME = sh(script: "python3 setup.py --name", returnStdout: true).trim()
-                        env.PACKAGE_VERSION = sh(script: "python3 setup.py --version", returnStdout: true).trim()
-                        def distFiles = sh(script: "ls -1 dist/", returnStdout: true).trim().split("\n")
-                        
-                        // Pick the wheel and tar.gz files
-                        env.WHL_FILE = distFiles.find { it.endsWith(".whl") } ?: ""
-                        env.TAR_FILE = distFiles.find { it.endsWith(".tar.gz") } ?: ""
-                        
-                        echo "Detected Package: ${env.PACKAGE_NAME}, Version: ${env.PACKAGE_VERSION}"
-                        echo "Distfiles WHL: ${env.WHL_FILE}, TAR: ${env.TAR_FILE}"
-                    }
-                }    
-            }
-        }
-
 
         stage("Artifacts Upload"){
             steps{
-                dir('app/'){
+                dir('springapp/'){
+                    sh  'mvn clean install package'
                     nexusArtifactUploader(
                     nexusVersion: 'nexus3',
                     protocol: 'http',
                     nexusUrl: "${env.NEXUSURL_HOST}",
-                    groupId: 'highskyapp',
-                    version: "${env.PACKAGE_VERSION}",
-                    repository: 'python-release',  // use a PyPI-like repo in Nexus
+                    groupId: 'com.example',
+                    version: "1.0.0-SNAPSHOT",
+                    repository: 'maven-snapshot',  // use a PyPI-like repo in Nexus
                     credentialsId: 'nexus-creds',
                     artifacts: [
-                        [
-                            artifactId: "",
-                            classifier: '',
-                            file: "dist/${env.WHL_FILE}",
-                            type: 'whl'
-                        ],
-                        [
-                            artifactId: "",
-                            classifier: '',
-                            file: "dist/${env.TAR_FILE}",
-                            type: 'tar.gz'
-                        ]
+                        [artifactId: "demo" ,
+                        classifier: '',
+                        file: "target/demo-1.0.0-SNAPSHOT.jar",
+                        type: 'jar']
                     ]
                    )
                 }        

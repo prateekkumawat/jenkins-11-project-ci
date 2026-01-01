@@ -12,7 +12,7 @@ pipeline {
 
   environment {
     SCANNER_HOME = tool 'sonar-scanner'
-    NEXUSURL_HOST = "52.66.146.193:8081"
+    NEXUSURL_HOST = "3.6.94.137:8081"
     }
 
   stages{

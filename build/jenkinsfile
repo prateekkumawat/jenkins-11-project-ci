@@ -3,6 +3,11 @@ pipeline {
     label 'agent1'
    }
 
+   environment {
+        // Path to the kubeconfig file
+        KUBECONFIG = "${WORKSPACE}/kubeconfig"
+   }
+   
     stages{
         stage("Clean Workspace") { 
             steps {

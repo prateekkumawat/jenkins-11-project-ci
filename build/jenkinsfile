@@ -7,7 +7,7 @@ pipeline {
         // Path to the kubeconfig file
         KUBECONFIG = "${WORKSPACE}/kubeconfig"
    }
-   
+
     stages{
         stage("Clean Workspace") { 
             steps {
@@ -17,7 +17,7 @@ pipeline {
 
         stage("App Codeckeckout"){
             steps {
-                git branch: "pyhtonbuild", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
+                git branch: "pythonbuild", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
             }  
         }
         

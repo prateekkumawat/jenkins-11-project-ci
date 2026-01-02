@@ -30,9 +30,9 @@ pipeline {
                     kubectl apply -f deployment/mysql/namespace.yaml --validate=false
                     kubectl apply -f deployment/mysql/deployment.yaml --validate=false
                     kubectl apply -f deployment/mysql/service.yaml --validate=false
-                    kubectl apply -f deploymen/pythonapp/namespace.yaml --validate=false
-                    kubectl apply -f deploymen/pythonapp/deployment.yaml --validate=false
-                    kubectl apply -f deploymen/pythonapp/service.yaml --validate=false
+                    kubectl apply -f deployment/pythonapp/namespace.yaml --validate=false
+                    kubectl apply -f deployment/pythonapp/deployment.yaml --validate=false
+                    kubectl apply -f deployment/pythonapp/service.yaml --validate=false
                  """ 
                 }   
             }

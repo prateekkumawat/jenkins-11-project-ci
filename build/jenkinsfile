@@ -2,15 +2,8 @@ pipeline {
   agent {
     label 'agent1'
    }
-  parameters {
-        string(name: 'ImageTag', defaultValue: 'pythonapp-rc-1.0', description: 'ImageTag') 
-  }
-  environment {
-    SCANNER_HOME = tool 'sonar-scanner'
-    NEXUSURL_HOST = "13.232.123.117:8081"
-    }
 
-  stages{
+    stages{
         stage("Clean Workspace") { 
             steps {
                 cleanWs()
@@ -23,117 +16,20 @@ pipeline {
             }  
         }
         
-        stage ("Sonar Analysis"){
+        stage("kubernetes-deployment"){
             steps{
-                dir('app/'){
-                    withSonarQubeEnv('sonar-server') {
-                       sh ''' 
-                        $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectKey=python-build-app \
-                        -Dsonar.projectName=python-build-app  '''
-                    }
-                }             
-            }
-        }
-
-        stage("Sonar QualityGate"){
-            steps{
-                script {
-                  waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
-                }
-            }
-        }
-        
-        stage("PythonBuild"){
-            steps{
-                dir('app/'){
-                  sh '''
-                    #!/bin/bash
-                    set -e
-                    python3 -m venv venv
-                    venv/bin/pip install --upgrade pip setuptools wheel build
-                    venv/bin/python -m build
-                    '''
-
-                    // Dynamically get package name and version
-                    script {
-                        env.PACKAGE_NAME = sh(script: "python3 setup.py --name", returnStdout: true).trim()
-                        env.PACKAGE_VERSION = sh(script: "python3 setup.py --version", returnStdout: true).trim()
-                        def distFiles = sh(script: "ls -1 dist/", returnStdout: true).trim().split("\n")
-                        
-                        // Pick the wheel and tar.gz files
-                        env.WHL_FILE = distFiles.find { it.endsWith(".whl") } ?: ""
-                        env.TAR_FILE = distFiles.find { it.endsWith(".tar.gz") } ?: ""
-                        
-                        echo "Detected Package: ${env.PACKAGE_NAME}, Version: ${env.PACKAGE_VERSION}"
-                        echo "Distfiles WHL: ${env.WHL_FILE}, TAR: ${env.TAR_FILE}"
-                    }
-                }    
-            }
-        }
-
-
-        stage("Artifacts Upload"){
-            steps{
-                dir('app/'){
-                    nexusArtifactUploader(
-                    nexusVersion: 'nexus3',
-                    protocol: 'http',
-                    nexusUrl: "${env.NEXUSURL_HOST}",
-                    groupId: 'highskyapp',
-                    version: "${env.PACKAGE_VERSION}",
-                    repository: 'python-release',  // use a PyPI-like repo in Nexus
-                    credentialsId: 'nexus-creds',
-                    artifacts: [
-                        [
-                            artifactId: "",
-                            classifier: '',
-                            file: "dist/${env.WHL_FILE}",
-                            type: 'whl'
-                        ],
-                        [
-                            artifactId: "",
-                            classifier: '',
-                            file: "dist/${env.TAR_FILE}",
-                            type: 'tar.gz'
-                        ]
-                    ]
-                   )
-                }        
-            }
-        }
-
-        stage("build Image"){
-            steps{
-                sh "docker build -t prateekkumawat/jenkinsimage:${params.ImageTag} ."
-            }
-        }
-
-        stage("Trivy ImageScan"){
-            steps{
-                sh "trivy image prateekkumawat/jenkinsimage:${params.ImageTag} >> /home/ubuntu/scanner_report/${params.ImageTag}_report.txt"
-            }
-        }
-
-
-        stage("Image push"){
-            environment {
-                DOCKER_CREDS = credentials('docker-creds')
-            }
-            steps{
-                sh "docker login -u $DOCKER_CREDS_USR -p $DOCKER_CREDS_PSW "
-                sh "docker push prateekkumawat/jenkinsimage:${params.ImageTag}" 
-            }
-        }
-
-        stage("Container Build"){
-            environment {
-                DOCKER_CREDS = credentials('docker-creds')
-            }
-            steps{
-                sh '''
-                   echo " build compose"
-                ''' 
+                withCredentials([file(credentialsId: 'kube-config', variable: 'KUBECONFIG_FILE')]) {
+                sh """
+                    cp $KUBECONFIG_FILE $KUBECONFIG
+                    chmod 600 $KUBECONFIG
+                    kubectl apply -f deployment/mysql/namespace.yaml --validate=false
+                    kubectl apply -f deployment/mysql/deployment.yaml --validate=false
+                    kubectl apply -f deployment/mysql/service.yaml --validate=false
+                    kubectl apply -f deploymen/pythonapp/namespace.yaml --validate=false
+                    kubectl apply -f deploymen/pythonapp/deployment.yaml --validate=false
+                    kubectl apply -f deploymen/pythonapp/service.yaml --validate=false
+                 """ 
+                }   
             }
         }
 

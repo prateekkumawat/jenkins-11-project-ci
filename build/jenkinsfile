@@ -17,7 +17,7 @@ pipeline {
 
         stage("App Codeckeckout"){
             steps {
-                git branch: "pythonbuild", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
+                git branch: "reactapp", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
             }  
         }
         
@@ -27,12 +27,7 @@ pipeline {
                 sh """
                     cp $KUBECONFIG_FILE $KUBECONFIG
                     chmod 600 $KUBECONFIG
-                    kubectl apply -f deployment/mysql/namespace.yaml --validate=false
-                    kubectl apply -f deployment/mysql/deployment.yaml --validate=false
-                    kubectl apply -f deployment/mysql/service.yaml --validate=false
-                    kubectl apply -f deployment/pythonapp/namespace.yaml --validate=false
-                    kubectl apply -f deployment/pythonapp/deployment.yaml --validate=false
-                    kubectl apply -f deployment/pythonapp/service.yaml --validate=false
+                    kubectl apply -f deployment/deployment.yaml --validate=false
                  """ 
                 }   
             }

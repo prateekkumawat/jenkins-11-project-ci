@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: react-app
-        image: prateekkumawat/demoapp:react-1.0
+        image: prateekkumawat/jenkinsimage:reactapp-rc-1.0
         resources:
           requests: 
             cpu: "500m"

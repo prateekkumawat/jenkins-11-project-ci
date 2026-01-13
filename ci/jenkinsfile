@@ -6,7 +6,7 @@ pipeline {
         string(name: 'ImageTag', defaultValue: 'netflixapp-rc-1.0', description: 'ImageTag') 
   }
   tools {
-    NodeJS 'NodeJS'
+    nodejs 'NodeJS'
   }
   environment {
     SCANNER_HOME = tool 'sonar-scanner'

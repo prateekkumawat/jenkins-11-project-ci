@@ -3,7 +3,7 @@ pipeline {
     label 'agent1'
    }
   parameters {
-        string(name: 'ImageTag', defaultValue: 'reactapp-rc-1.0', description: 'ImageTag') 
+        string(name: 'ImageTag', defaultValue: 'netflixapp-rc-1.0', description: 'ImageTag') 
   }
   environment {
     SCANNER_HOME = tool 'sonar-scanner'
@@ -18,18 +18,21 @@ pipeline {
 
         stage("App Codeckeckout"){
             steps {
-                git branch: "reactapp", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
+                git branch: "Netflixproject", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
             }  
         }
         
         stage ("Sonar Analysis"){
             steps{
-                dir('crypto-nextjs/'){
+                dir('appcode/'){
                     withSonarQubeEnv('sonar-server') {
                        sh ''' 
-                        $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectKey=react-app-demo \
-                        -Dsonar.projectName=react-app-demo  '''
+                        npx @sonar/scan \
+                        -Dsonar.projectKey=Netflix-react-app-project \
+                        -Dsonar.projectName=Netflix-react-app-project \
+                        -Dsonar.sources=src \
+                        -Dsonar.language=ts \
+                        -Dsonar.exclusions=dist/**,node_modules/**,public/**   '''
                     }
                 }             
             }

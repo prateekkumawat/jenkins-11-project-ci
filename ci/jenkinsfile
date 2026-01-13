@@ -51,7 +51,9 @@ pipeline {
         
         stage("build Image"){
             steps{
-                sh "docker build -t prateekkumawat/jenkinsimage:${params.ImageTag} ."
+               dir('appcode/'){
+                    sh "docker build -t prateekkumawat/jenkinsimage:${params.ImageTag} ."
+               }    
             }
         }
 

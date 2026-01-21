@@ -81,7 +81,7 @@ pipeline {
             steps {
                 dir('terraform/app1') {
                     echo "User approved deployment — running Terraform Destroy..."
-                    sh 'terraform destroy -auto-approve tfplan'
+                    sh 'terraform destroy -auto-approve'
                 }
             }
         }

@@ -2,16 +2,6 @@ pipeline {
   agent {
     label 'agent1'
    }
-  parameters {
-        string(name: 'ImageTag', defaultValue: 'netflixapp-rc-1.0', description: 'ImageTag') 
-  }
-  tools {
-    nodejs 'NodeJS'
-  }
-  environment {
-    SCANNER_HOME = tool 'sonar-scanner'
-    }
-
   stages{
         stage("Clean Workspace") { 
             steps {
@@ -21,66 +11,75 @@ pipeline {
 
         stage("App Codeckeckout"){
             steps {
-                git branch: "Netflixproject", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
+                git branch: "terraform", url:"https://github.com/prateekkumawat/jenkins-11-project-ci.git"
             }  
         }
         
-        stage ("Sonar Analysis"){
-            steps{
-                dir('appcode/'){
-                    withSonarQubeEnv('sonar-server') {
-                       sh ''' 
-                        npx @sonar/scan \
-                        -Dsonar.projectKey=Netflix-react-app-project \
-                        -Dsonar.projectName=Netflix-react-app-project \
-                        -Dsonar.sources=src \
-                        -Dsonar.language=ts \
-                        -Dsonar.exclusions=dist/**,node_modules/**,public/**   '''
-                    }
-                }             
+        stage("Terraform init"){
+          steps {
+            dir('terraform/app1'){
+                sh 'terraform init -input=false'
             }
+          }
         }
 
-        stage("Sonar QualityGate"){
-            steps{
+        stage("Terraform plan"){
+          steps {
+            dir('terraform/app1'){
+                sh '''
+                terraform plan -out=tfplan
+                terraform show -no-color tfplan > tfplan.txt
+                '''
+            }    
+          }
+        }
+        
+        stage('Approval for Apply') {
+            steps {
                 script {
-                  waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
+                    try {
+                        timeout(time: 10, unit: 'MINUTES') {
+                            def userInput = input(
+                                id: 'userApprove',
+                                message: 'Do you want to proceed with Terraform Apply?',
+                                ok: 'Approve',
+                                parameters: [
+                                    choice(
+                                        name: 'Action',
+                                        choices: ['Apply', 'Skip'],
+                                        description: 'Choose whether to Apply or Skip deployment'
+                                    )
+                                ]
+                            )
+                            env.DEPLOY_ACTION = userInput
+                            echo "User selected action: ${env.DEPLOY_ACTION}"
+                        }
+                    } catch (err) {
+                        echo "No input received or aborted. Defaulting to SKIP."
+                        env.DEPLOY_ACTION = 'Skip'
+                    }
                 }
             }
         }
-        
-        stage("build Image"){
-            steps{
-               dir('appcode/'){
-                    sh "docker build -t prateekkumawat/jenkinsimage:${params.ImageTag} ."
-               }    
+
+        stage('Terraform Apply') {
+            when {
+                expression { env.DEPLOY_ACTION == 'Apply' }
+            }
+            steps {
+                dir('terraform/app1') {
+                    echo "User approved deployment — running Terraform Apply..."
+                    sh 'terraform apply -auto-approve tfplan'
+                }
             }
         }
 
-        stage("Trivy ImageScan"){
-            steps{
-                sh "trivy image prateekkumawat/jenkinsimage:${params.ImageTag} >> /home/ubuntu/scanner_report/${params.ImageTag}_report.txt"
+        stage('Skip Deployment') {
+            when {
+                expression { env.DEPLOY_ACTION == 'Skip' }
             }
-        }
-
-        stage("Image push"){
-            environment {
-                DOCKER_CREDS = credentials('docker-creds')
-            }
-            steps{
-                sh "docker login -u $DOCKER_CREDS_USR -p $DOCKER_CREDS_PSW "
-                sh "docker push prateekkumawat/jenkinsimage:${params.ImageTag}" 
-            }
-        }
-
-        stage("Container Build"){
-            environment {
-                DOCKER_CREDS = credentials('docker-creds')
-            }
-            steps{
-                sh '''
-                   echo " build compose"
-                ''' 
+            steps {
+                echo "Terraform Apply skipped by user choice or timeout."
             }
         }
 
